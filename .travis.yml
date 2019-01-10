@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t derekfong/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run derekfong/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t derekfong/multi-client ./client
+  - docker build -t derekfong/multi-nginx ./nginx
+  - docker build -t derekfong/multi-server ./server
+  - docker build -t derekfong/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push derekfong/multi-client
+  - docker push derekfong/multi-nginx
+  - docker push derekfong/multi-server
+  - docker push derekfong/multi-worker
